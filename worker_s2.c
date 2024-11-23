@@ -2,8 +2,9 @@
  * Operating Systems  (2INCO)  Practical Assignment
  * Interprocess Communication
  *
- * STUDENT_NAME_1 (STUDENT_NR_1)
- * STUDENT_NAME_2 (STUDENT_NR_2)
+ * Jie Liu (1799525)
+ * Augustin Lassus (1797441)
+ * Luis Fernadez Gu (1804189)
  *
  * Grading:
  * Your work will be evaluated based on the following criteria:
@@ -46,6 +47,29 @@ int main (int argc, char * argv[])
     //    until there are no more tasks to do
     //  * close the message queues
 
+    mqd_t mq_d2w;
+    mqd_t mq_resp;
+    MQ_DEALER2WORKER_MESSAGE received;
+    received.id = 0;
+    MQ_DEALER2WORKER_MESSAGE response;
+
+    mq_d2w  = mq_open(argv[1], O_RDONLY);
+    mq_resp = mq_open(argv[2], O_RDONLY);
+
+    do
+    {
+        mq_receive(mq_d2w, (char *) &received, sizeof(received), NULL);
+        rsleep(10000);
+        if (received.id == TERMINATION_CODE) {
+            break;
+        }
+        response.id = received.id;
+        response.data = service(received.data);
+        mq_send(mq_resp, (char *) &response, sizeof(response), 0);
+    } while (true);
+    
+    mq_close(mq_d2w);
+    mq_close(mq_resp);
     return(0);
 }
 

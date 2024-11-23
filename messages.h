@@ -20,7 +20,7 @@
 
 // define the data structures for your messages here
 
-#define CONTENT_LEN 256 
+#define TERMINATION_CODE -1 
 
 typedef struct
 {

@@ -44,6 +44,21 @@ int main (int argc, char * argv[])
     fprintf (stderr, "%s: invalid arguments\n", argv[0]);
   }
   
+  
+
+  // TODO:
+    //  * create the message queues (see message_queue_test() in
+    //    interprocess_basic.c) Done!
+    //  * create the child processes (see process_test() and
+    //    message_queue_test())
+    //  * read requests from the Req queue and transfer them to the workers
+    //    with the Sx queues
+    //  * read answers from workers in the Rep queue and print them
+    //  * wait until the client has been stopped (see process_test())
+    //  * clean up the message queues (see message_queue_test())
+
+    // Important notice: make sure that the names of the message queues
+    // contain your goup number (to ensure uniqueness during testing)
   int mq_maxmsg = 10;
   struct mq_attr attr;
   int router_pid = getpid();
@@ -52,6 +67,8 @@ int main (int argc, char * argv[])
   mqd_t mq_dealer2worker2;
   mqd_t mq_worker2dealer;
   pid_t client_1;
+  pid_t workers1[N_SERV1];
+  pid_t workers2[N_SERV2];
 
   sprintf(client2dealer_name, "/Req_queue_%s_%d", STUDENT_NAME, router_pid);
   sprintf(dealer2worker1_name, "/S1_queue_%s_%d", STUDENT_NAME, router_pid);
@@ -74,20 +91,47 @@ int main (int argc, char * argv[])
   attr.mq_msgsize = sizeof (MQ_DEALER2WORKER_MESSAGE);
   mq_worker2dealer = mq_open (worker2dealer_name, O_WRONLY | O_CREAT | O_EXCL, 0600, &attr);
 
+  client_1 = fork();
 
-  // TODO:
-    //  * create the message queues (see message_queue_test() in
-    //    interprocess_basic.c)
-    //  * create the child processes (see process_test() and
-    //    message_queue_test())
-    //  * read requests from the Req queue and transfer them to the workers
-    //    with the Sx queues
-    //  * read answers from workers in the Rep queue and print them
-    //  * wait until the client has been stopped (see process_test())
-    //  * clean up the message queues (see message_queue_test())
+  if(client_1 == 0) {
 
-    // Important notice: make sure that the names of the message queues
-    // contain your goup number (to ensure uniqueness during testing)
-  
+  } else {
+    for (int i = 0; i < N_SERV1; i++)
+    {
+      pid_t temp = fork();
+      if (temp > 0) {
+        workers1[i] = temp;
+      } else {
+        // TODO
+      }
+      
+    }
+
+    for (int i = 0; i < N_SERV2; i++)
+    {
+      pid_t temp = fork();
+      pid_t temp = fork();
+      if (temp > 0) {
+        workers2[i] = temp;
+      } else {
+        // TODO
+      }
+    }
+        
+  }
+
+
+
+
+
+
+  mq_close(mq_client2dealer);
+  mq_close(mq_dealer2worker1);
+  mq_close(mq_dealer2worker2);
+  mq_close(mq_worker2dealer);
+  mq_unlink(client2dealer_name);
+  mq_unlink(dealer2worker1_name);
+  mq_unlink(dealer2worker2_name);
+  mq_unlink(worker2dealer_name);
   return (0);
 }
