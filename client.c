@@ -53,10 +53,11 @@ int main (int argc, char * argv[])
     do
     {
         request_left = getNextRequest(&req_msg.id, &req_msg.data, &req_msg.service_type);
-        if(request_left > NO_REQ){
-            mq_send(mq_request, (char *) &req_msg, sizeof(req_msg), 0);
+        if(request_left <= NO_REQ){
+            break;            
         }
-    } while (request_left <= NO_REQ);
+        mq_send(mq_request, (char *) &req_msg, sizeof(req_msg), 0);
+    } while (true);
     
 
     mq_close(mq_request);

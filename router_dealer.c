@@ -59,7 +59,8 @@ int main (int argc, char * argv[])
 
     // Important notice: make sure that the names of the message queues
     // contain your goup number (to ensure uniqueness during testing)
-  int mq_maxmsg = 10;
+  
+  // int mq_maxmsg = 10;
   struct mq_attr attr;
   int router_pid = getpid();
   mqd_t mq_client2dealer;
@@ -95,14 +96,22 @@ int main (int argc, char * argv[])
 
   if(client_1 == 0) {
 
+    execlp("client", "client", "client2dealer_name", NULL);
+
   } else {
+
+    int clien_status = 0;
+    int cliend_id = 0;
+
     for (int i = 0; i < N_SERV1; i++)
     {
       pid_t temp = fork();
       if (temp > 0) {
         workers1[i] = temp;
       } else {
-        // TODO
+        execlp(
+          "./worker_s1", "worker_s1",
+           dealer2worker1_name, worker2dealer_name, NULL);
       }
       
     }
@@ -110,14 +119,73 @@ int main (int argc, char * argv[])
     for (int i = 0; i < N_SERV2; i++)
     {
       pid_t temp = fork();
-      pid_t temp = fork();
       if (temp > 0) {
         workers2[i] = temp;
       } else {
-        // TODO
+        execlp(
+          "./worker_s1", "worker_s1",
+          dealer2worker2_name, worker2dealer_name, NULL
+        );
       }
     }
-        
+
+    MQ_CLIENT2DEALER_MESSAGE msg_c2d;
+    MQ_DEALER2WORKER_MESSAGE msg_d2w;
+    // MQ_DEALER2WORKER_MESSAGE msg_d2w2;
+    MQ_DEALER2WORKER_MESSAGE msg_w2d;
+    
+    while (client_1 != cliend_id) {
+      mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL);
+      msg_d2w.id = msg_c2d.id;
+      msg_d2w.data = msg_c2d.data;
+
+      if (msg_c2d.service_type == 1) {
+        mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+      }else {
+        mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+      }
+
+      mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
+      printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
+
+      cliend_id = waitpid(client_1, &clien_status, WNOHANG);
+    }
+
+    while (true) {
+      int is_msg_c2d_left = mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL);
+      if (is_msg_c2d_left == -1 && errno == EAGAIN) {
+        break;
+      } 
+
+      msg_d2w.id = msg_c2d.id;
+      msg_d2w.data = msg_c2d.data;
+
+      if (msg_c2d.service_type == 1) {
+        mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+      }else {
+        mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+      }
+
+      mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
+      printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
+    }
+
+
+    for (int i = 0; i < N_SERV1; i++)
+    {
+      msg_d2w.id = TERMINATION_CODE;
+      mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+      wait(NULL);
+    }
+
+    for (int i = 0; i < N_SERV2; i++)
+    {
+      msg_d2w.id = TERMINATION_CODE;
+      mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+      wait(NULL);
+    }
+    
+     
   }
 
 
