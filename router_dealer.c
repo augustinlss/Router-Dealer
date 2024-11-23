@@ -2,8 +2,9 @@
  * Operating Systems  (2INCO)  Practical Assignment
  * Interprocess Communication
  *
- * STUDENT_NAME_1 (STUDENT_NR_1)
- * STUDENT_NAME_2 (STUDENT_NR_2)
+ * Jie Liu (1799525)
+ * Augustin Lassus (1797441)
+ * Luis Fernadez Gu (1804189)
  *
  * Grading:
  * Your work will be evaluated based on the following criteria:
@@ -34,6 +35,8 @@ char dealer2worker1_name[30];
 char dealer2worker2_name[30];
 char worker2dealer_name[30];
 
+#define STUDENT_NAME        "JieAugustinLuis"
+
 int main (int argc, char * argv[])
 {
   if (argc != 1)
@@ -41,6 +44,37 @@ int main (int argc, char * argv[])
     fprintf (stderr, "%s: invalid arguments\n", argv[0]);
   }
   
+  int mq_maxmsg = 10;
+  struct mq_attr attr;
+  int router_pid = getpid();
+  mqd_t mq_client2dealer;
+  mqd_t mq_dealer2worker1;
+  mqd_t mq_dealer2worker2;
+  mqd_t mq_worker2dealer;
+  pid_t client_1;
+
+  sprintf(client2dealer_name, "/Req_queue_%s_%d", STUDENT_NAME, router_pid);
+  sprintf(dealer2worker1_name, "/S1_queue_%s_%d", STUDENT_NAME, router_pid);
+  sprintf(dealer2worker2_name, "/S2_queue_%s_%d", STUDENT_NAME, router_pid);
+  sprintf(worker2dealer_name, "/Rsp_queue_%s_%d", STUDENT_NAME, router_pid);
+
+  attr.mq_maxmsg = MQ_MAX_MESSAGES;
+  attr.mq_msgsize = sizeof (MQ_CLIENT2DEALER_MESSAGE);
+  mq_client2dealer = mq_open (client2dealer_name, O_WRONLY | O_CREAT | O_EXCL, 0600, &attr);
+
+  attr.mq_maxmsg = MQ_MAX_MESSAGES;
+  attr.mq_msgsize = sizeof (MQ_DEALER2WORKER_MESSAGE);
+  mq_dealer2worker1 = mq_open (dealer2worker1_name, O_WRONLY | O_CREAT | O_EXCL, 0600, &attr);
+
+  attr.mq_maxmsg = MQ_MAX_MESSAGES;
+  attr.mq_msgsize = sizeof (MQ_DEALER2WORKER_MESSAGE);
+  mq_dealer2worker2 = mq_open (dealer2worker2_name, O_WRONLY | O_CREAT | O_EXCL, 0600, &attr);
+
+  attr.mq_maxmsg = MQ_MAX_MESSAGES;
+  attr.mq_msgsize = sizeof (MQ_DEALER2WORKER_MESSAGE);
+  mq_worker2dealer = mq_open (worker2dealer_name, O_WRONLY | O_CREAT | O_EXCL, 0600, &attr);
+
+
   // TODO:
     //  * create the message queues (see message_queue_test() in
     //    interprocess_basic.c)

@@ -40,5 +40,24 @@ int main (int argc, char * argv[])
     //    until there are no more requests to send
     //  * close the message queue
     
+    mqd_t mq_request;
+    MQ_CLIENT2DEALER_MESSAGE req_msg;
+    req_msg.id = -1;
+    req_msg.service_type = -1;
+    req_msg.data = -1;
+    int request_left = -1;
+
+    mq_request = mq_open (argv[1], O_RDONLY);
+
+    do
+    {
+        request_left = getNextRequest(&req_msg.id, &req_msg.data, &req_msg.service_type);
+        if(request_left > NO_REQ){
+            mq_send(mq_request, (char *) &req_msg, sizeof(req_msg), 0);
+        }
+    } while (request_left <= NO_REQ);
+    
+
+    mq_close(mq_request);
     return (0);
 }
