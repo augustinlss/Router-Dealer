@@ -1,22 +1,19 @@
-## Run docker-compose down -v && docker-compose up --build if u wanna use docker
-FROM ubuntu:20.04
+FROM ubuntu:latest
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt update && apt install -y \
+# Install required packages
+RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
-    libc6-dev \
-    manpages-dev \
-    libpthread-stubs0-dev \
-    libaio-dev \
-    libcap-dev \
-    && rm -rf /var/lib/apt/lists/*
+    make
 
+# Create working directory
 WORKDIR /app
 
-COPY . /app
+# Copy all source files
+COPY . .
 
-RUN gcc -o router-dealer main.c -lrt
+# Build the project
+RUN make clean && make all
 
-CMD ["./router-dealer"]
+# Command to run the router_dealer
+CMD ["./router_dealer"]
