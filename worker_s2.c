@@ -50,22 +50,53 @@ int main (int argc, char * argv[])
     mqd_t mq_d2w;
     mqd_t mq_resp;
     MQ_DEALER2WORKER_MESSAGE received;
-    received.id = 0;
+    received.id = 114514;
     MQ_DEALER2WORKER_MESSAGE response;
 
     mq_d2w  = mq_open(argv[1], O_RDONLY);
-    mq_resp = mq_open(argv[2], O_RDONLY);
+    mq_resp = mq_open(argv[2], O_WRONLY);
+
+    // todo b0
+    printf("worker 2 starts executing\n");
+    // b0
 
     do
     {
         mq_receive(mq_d2w, (char *) &received, sizeof(received), NULL);
-        rsleep(10000);
+        // if (mq_receive(mq_d2w, (char *) &received, sizeof(received), NULL) != -1) {
+        //     rsleep(WAITING_TIME);
+        //     if (received.id == TERMINATION_CODE) {
+        //         printf("From woker2, termination received\n");
+        //         break;
+        //     }
+        //     response.id = received.id;
+        //     response.data = service(received.data);
+        //     printf("From woker1, rec id: %d, rec data: %d, resp data:%d\n",
+        //         received.id, received.data, response.data);
+        //     mq_send(mq_resp, (char *) &response, sizeof(response), 0);
+        // }  
+        rsleep(WAITING_TIME);
         if (received.id == TERMINATION_CODE) {
+            // todo b1
+            printf("From woker2, termination received\n");
+            // b1
+            response.id = TERMINATION_CODE;
+            mq_send(mq_resp, (char *) &response, sizeof(response), 0);
             break;
         }
         response.id = received.id;
         response.data = service(received.data);
-        mq_send(mq_resp, (char *) &response, sizeof(response), 0);
+        // todo b1
+        printf("From woker2, rec id: %d, rec data: %d, resp data:%d\n",
+            received.id, received.data, response.data);
+            // b1
+        mq_send(mq_resp, (char *) &response, sizeof(response), 0);    
+
+        //TODO test block1
+        // else {
+        //     printf("worker 1 did not receive anything, loop go on\n");
+        // }
+        //test block1
     } while (true);
     
     mq_close(mq_d2w);

@@ -21,6 +21,7 @@
 // define the data structures for your messages here
 
 #define TERMINATION_CODE -1 
+#define WAITING_TIME 1000 
 
 typedef struct
 {
