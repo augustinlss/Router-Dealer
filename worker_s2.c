@@ -63,6 +63,7 @@ int main (int argc, char * argv[])
     do
     {
         mq_receive(mq_d2w, (char *) &received, sizeof(received), NULL);
+
         // todo b1
         printf("From woker2, received msg from dealer, rec id: %d, rec data: %d\n",
             received.id, received.data);
@@ -101,10 +102,10 @@ int main (int argc, char * argv[])
 
         mq_send(mq_resp, (char *) &response, sizeof(response), 0);  
 
-        // todo b1
+        // todo 
         printf("From woker2, sent to response, rec id: %d, rec data: %d, resp data:%d\n",
             received.id, received.data, response.data);
-            // b1 
+        // end 
 
         //TODO test block1
         // else {

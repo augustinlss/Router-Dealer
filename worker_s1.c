@@ -81,6 +81,7 @@ int main (int argc, char * argv[])
         // } 
         rsleep(WAITING_TIME);
         if (received.id == TERMINATION_CODE) {
+            
             // todo b1
             printf("From woker1, termination received\n");
             // b1
