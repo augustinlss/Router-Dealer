@@ -60,6 +60,12 @@ int main (int argc, char * argv[])
     do
     {
         mq_receive(mq_d2w1, (char *) &received, sizeof(received), NULL);
+
+        // todo b1
+        printf("From woker1, received msg from dealer, rec id: %d, rec data: %d\n",
+            received.id, received.data);
+        // b1
+
         // if (mq_receive(mq_d2w1, (char *) &received, sizeof(received), NULL) != -1) {
         //     rsleep(WAITING_TIME);
         //     // sleep(100);
@@ -78,17 +84,27 @@ int main (int argc, char * argv[])
             // todo b1
             printf("From woker1, termination received\n");
             // b1
+
             response.id = TERMINATION_CODE;
             mq_send(mq_resp, (char *) &response, sizeof(response), 0);
             break;
         }
         response.id = received.id;
         response.data = service(received.data);
-        // todo b1
-        printf("From woker1, rec id: %d, rec data: %d, resp data:%d\n",
-            received.id, received.data, response.data);
-            // todo b2
+
+        // todo
+        struct mq_attr attr_w2d;
+        mq_getattr(mq_resp, &attr_w2d);
+        printf("From worker1. Waiting to send msg to respose channel, msg left in the channel: %ld\n", attr_w2d.mq_curmsgs);
+        // end
+
         mq_send(mq_resp, (char *) &response, sizeof(response), 0);
+        
+        // todo b1
+        printf("From woker1, sent to response, rec id: %d, rec data: %d, resp data:%d\n",
+            received.id, received.data, response.data);
+        // todo b2
+
         //TODO test block1
         // else {
         //     printf("worker 1 did not receive anything, loop go on\n");

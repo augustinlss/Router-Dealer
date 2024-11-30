@@ -70,8 +70,8 @@ int main (int argc, char * argv[])
   pid_t client_1;
 
   // todo 
-  pid_t workers1[N_SERV1];
-  pid_t workers2[N_SERV2];
+  // pid_t workers1[N_SERV1];
+  // pid_t workers2[N_SERV2];
   // todo end
 
 
@@ -112,7 +112,7 @@ int main (int argc, char * argv[])
            dealer2worker1_name, worker2dealer_name, NULL);
       }
       // todo 
-      workers1[i] = temp;
+      // workers1[i] = temp;
       // todo end      
     }
 
@@ -125,36 +125,124 @@ int main (int argc, char * argv[])
           dealer2worker2_name, worker2dealer_name, NULL);
       }
       // todo 
-      workers2[i] = temp;
+      // workers2[i] = temp;
       // todo end
     }
+
+    // todo
+    printf("From the dealer. All workers created.\n");
+    // end
     
     MQ_CLIENT2DEALER_MESSAGE msg_c2d;
     MQ_DEALER2WORKER_MESSAGE msg_d2w;
     MQ_DEALER2WORKER_MESSAGE msg_w2d;
     
+    // todo version for using buffer to fix
+    // int isBuffered = 0;
+    // 0 -> not buffered
+    // 1 -> buffered message
+    // end version for using buffer to fix
 
     while (true) {
       struct mq_attr attr_c2d;
       struct mq_attr attr_w2d;
 
+      // deadlock version.
       mq_getattr(mq_client2dealer, &attr_c2d);
       if (attr_c2d.mq_curmsgs > 0) {
+        // todo
+        printf("From dealer. Message left in client to dealer channel: %ld\n", attr_c2d.mq_curmsgs);
+        // end
+
         mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL);
         if (msg_c2d.id == TERMINATION_CODE) {
           // todo 
           printf("client to dealer queue empty, and first loop stop\n");
           // todo end
+
           break;
         }
+        // todo
+        printf("From dealer. Fetch msg from client to dealer channel succeed.\n");
+        // end
+
         msg_d2w.id = msg_c2d.id;
         msg_d2w.data = msg_c2d.data;
         if (msg_c2d.service_type == 1) {
-          mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+          // todo
+          struct mq_attr attr_d2w;
+          mq_getattr(mq_dealer2worker1, &attr_d2w);
+          printf("From dealer. Waiting to send msg to worker1 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
+          // end
+
+          mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0); //deadlock here.
+
+          // todo
+          printf("From dealer. mgs sent to worker1 channel.\n");
+          // end
         }else {
-          mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+          struct mq_attr attr_d2w;
+          mq_getattr(mq_dealer2worker2, &attr_d2w);
+          printf("From dealer. Waiting to send msg to worker2 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
+          // end
+
+          mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0); //deadlock here.
+
+          // todo
+          printf("From dealer. mgs sent to worker2 channel.\n");
+          // end
         }
       }
+
+      // fixed the deadlock. Using the buffer scheme.
+      // mq_getattr(mq_client2dealer, &attr_c2d);
+      // if (attr_c2d.mq_curmsgs > 0) {
+      //   if (isBuffered == 0) {
+
+      //   }
+      //   // todo
+      //   printf("From dealer. Message left in client to dealer channel: %ld\n", attr_c2d.mq_curmsgs);
+      //   // end
+
+      //   mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL);
+      //   if (msg_c2d.id == TERMINATION_CODE) {
+      //     // todo 
+      //     printf("client to dealer queue empty, and first loop stop\n");
+      //     // todo end
+
+      //     break;
+      //   }
+      //   // todo
+      //   printf("From dealer. Fetch msg from client to dealer channel succeed.\n");
+      //   // end
+
+      //   msg_d2w.id = msg_c2d.id;
+      //   msg_d2w.data = msg_c2d.data;
+      //   if (msg_c2d.service_type == 1) {
+      //     // todo
+      //     struct mq_attr attr_d2w;
+      //     mq_getattr(mq_dealer2worker1, &attr_d2w);
+      //     printf("From dealer. Waiting to send msg to worker1 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
+      //     // end
+
+      //     mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0); //deadlock here.
+
+      //     // todo
+      //     printf("From dealer. mgs sent to worker1 channel.\n");
+      //     // end
+      //   }else {
+      //     struct mq_attr attr_d2w;
+      //     mq_getattr(mq_dealer2worker2, &attr_d2w);
+      //     printf("From dealer. Waiting to send msg to worker2 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
+      //     // end
+
+      //     mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0); //deadlock here.
+
+      //     // todo
+      //     printf("From dealer. mgs sent to worker2 channel.\n");
+      //     // end
+      //   }
+      // }
       // todo
       // else{
       //   printf("client to dealer channel empty\n");
@@ -164,8 +252,9 @@ int main (int argc, char * argv[])
       mq_getattr(mq_worker2dealer, &attr_w2d);
       if (attr_w2d.mq_curmsgs > 0) {
         // todo
-        printf("msg found in the repsonse channel\n");
+        printf("msg left in the response channel: %ld\n", attr_w2d.mq_curmsgs);
         // todo end
+
         mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
         printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
       }
@@ -174,15 +263,12 @@ int main (int argc, char * argv[])
       //   printf("response channel empty\n");
       // }
       // todo end
-      // todo
-      // sleep(10);
-      // todo end
     }
 
     int client_status = 0;
     waitpid(client_1, &client_status, 0);
     // todo 
-    printf("From dealer, client process released, with status: %d\n", client_status);
+    // printf("From dealer, client process released, with status: %d\n", client_status);
     // todo end
 
     for (int i = 0; i < N_SERV1; i++)
@@ -198,7 +284,7 @@ int main (int argc, char * argv[])
     }
 
     // todo
-    printf("From dealer, all termination signals send\n");
+    // printf("From dealer, all termination signals send\n");
     // todo end
     
     int num_termination_from_workers = 0;
@@ -206,8 +292,9 @@ int main (int argc, char * argv[])
       mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
       if (msg_w2d.id == TERMINATION_CODE) {
         // todo
-        printf("From dealer, termination signal received from worker\n");
+        // printf("From dealer, termination signal received from worker\n");
         // todo end
+
         num_termination_from_workers++;
       }
       else {
@@ -216,7 +303,7 @@ int main (int argc, char * argv[])
     }
 
     // todo
-    printf("From dealer, second while loop end\n"); 
+    // printf("From dealer, second while loop end\n"); 
     // todo end
 
     for (int i = 0; i < (N_SERV1 + N_SERV2); i++)
@@ -298,42 +385,42 @@ int main (int argc, char * argv[])
 
   // todo
 
-  int status_c;
-  pid_t cid_c = waitpid(client_1, &status_c, WNOHANG);
-  if (cid_c == 0 || cid_c == -1) {
-      printf("Client has been released before.\n");
-    } 
-  else {
-      printf("Client has NOT been released. waitpid returns %d\n", cid_c);
-  }
+  // int status_c;
+  // pid_t cid_c = waitpid(client_1, &status_c, WNOHANG);
+  // if (cid_c == 0 || cid_c == -1) {
+  //     printf("Client has been released before.\n");
+  //   } 
+  // else {
+  //     printf("Client has NOT been released. waitpid returns %d\n", cid_c);
+  // }
   
-  int worker_cnt = 0;
-  for (int i = 0; i < N_SERV1; i++)
-  {
-    worker_cnt++;
-    int status_w;
-    pid_t cid = waitpid(workers1[i], &status_w, WNOHANG);
-    if (cid == 0 || cid == -1) {
-      printf("Worker1, number: %d, has been released before.\n", worker_cnt);
-    } 
-    else {
-      printf("Worker1, number: %d, has NOT been released. waitpid returns %d\n", worker_cnt, cid);
-    }
-  }
-  worker_cnt = 0;
+  // int worker_cnt = 0;
+  // for (int i = 0; i < N_SERV1; i++)
+  // {
+  //   worker_cnt++;
+  //   int status_w;
+  //   pid_t cid = waitpid(workers1[i], &status_w, WNOHANG);
+  //   if (cid == 0 || cid == -1) {
+  //     printf("Worker1, number: %d, has been released before.\n", worker_cnt);
+  //   } 
+  //   else {
+  //     printf("Worker1, number: %d, has NOT been released. waitpid returns %d\n", worker_cnt, cid);
+  //   }
+  // }
+  // worker_cnt = 0;
 
-  for (int i = 0; i < N_SERV2; i++)
-  {
-    worker_cnt++;
-    int status_w;
-    pid_t cid = waitpid(workers2[i], &status_w, WNOHANG);
-    if (cid == 0 || cid == -1) {
-      printf("Worker2, number: %d, has been released before.\n", worker_cnt);
-    } 
-    else {
-      printf("Worker2, number: %d, has NOT been released. waitpid returns %d\n", worker_cnt, cid);
-    }
-  }
+  // for (int i = 0; i < N_SERV2; i++)
+  // {
+  //   worker_cnt++;
+  //   int status_w;
+  //   pid_t cid = waitpid(workers2[i], &status_w, WNOHANG);
+  //   if (cid == 0 || cid == -1) {
+  //     printf("Worker2, number: %d, has been released before.\n", worker_cnt);
+  //   } 
+  //   else {
+  //     printf("Worker2, number: %d, has NOT been released. waitpid returns %d\n", worker_cnt, cid);
+  //   }
+  // }
   
   // todo end
 

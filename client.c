@@ -53,23 +53,26 @@ int main (int argc, char * argv[])
     // todo b1
     printf("client starts executing\n");
     // b1
-
+    
+    
     do
     {
         request_left = getNextRequest(&req_msg.id, &req_msg.data, &req_msg.service_type);
         if(request_left <= NO_REQ){
             // todo b2
-            printf("No message left from client\n");
+            printf("From Client. No message left from client\n");
             // b2
+
             req_msg.id = TERMINATION_CODE;
             mq_send(mq_request, (char *) &req_msg, sizeof(req_msg), 0);
             break;            
-        }
-        // todo b3
-        printf("Client sentd - id: %d, type: %d, data: %d\n",
-            req_msg.id, req_msg.service_type, req_msg.data);
-            // b3
+        }        
         mq_send(mq_request, (char *) &req_msg, sizeof(req_msg), 0);
+        // todo b3
+        printf("From Client. Client sentd - id: %d, type: %d, data: %d\n",
+            req_msg.id, req_msg.service_type, req_msg.data);
+        // b3
+
     } while (true);
     
 

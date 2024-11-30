@@ -8,6 +8,9 @@
 
 #include "service2.h"
 
+// todo
+// #include <stdio.h>
+// end
 
 int service(int data) {
 	if (data <= 1)
@@ -25,3 +28,21 @@ int service(int data) {
 	return n;
 }
 
+// todo
+// int main(int argc, char const *argv[])
+// {
+// 	int data1 = 5;
+// 	int id1 = 2;
+// 	int data2 = 10;
+// 	int id2 = 3;
+
+// 	int result1 = service(data1);
+// 	int result2 = service(data2);
+	
+
+// 	printf("id: %d, type: 2, input: %d. result: %d\n", id1, data1, result1);
+// 	printf("id: %d, type: 2, input: %d. result: %d\n", id2, data2, result2);
+
+// 	return 0;
+// }
+// end
