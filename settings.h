@@ -8,9 +8,9 @@
 // #define N_SERV2    	 3
 // #define MQ_MAX_MESSAGES 	 10
 
-#define N_SERV1    	 1
-#define N_SERV2    	 1
-#define MQ_MAX_MESSAGES 	 1
+#define N_SERV1    	 5
+#define N_SERV2    	 5
+#define MQ_MAX_MESSAGES 	 10
 
 
 #endif

@@ -175,7 +175,7 @@ int main (int argc, char * argv[])
           msg_d2w.data = msg_c2d.data;
         }
               
-        if (msg_c2d.service_type == 1) {
+        if (msg_c2d.service_type == 1 && N_SERV1 > 0) {
           struct mq_attr attr_d2w;
           mq_getattr(mq_dealer2worker1, &attr_d2w);
           
@@ -185,6 +185,7 @@ int main (int argc, char * argv[])
             // end
 
             mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+            msg_send_cnt++;
             isBuffered = 0;
             // todo
             printf("From dealer. mgs sent to worker1 channel.\n");
@@ -192,7 +193,7 @@ int main (int argc, char * argv[])
           } else {
             isBuffered = 1;
           }                
-        }else {
+        }else if (msg_c2d.service_type == 2 && N_SERV2 > 0) {
           struct mq_attr attr_d2w;
           mq_getattr(mq_dealer2worker2, &attr_d2w);          
           
@@ -202,6 +203,7 @@ int main (int argc, char * argv[])
             // end
 
             mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+            msg_send_cnt++;
             isBuffered = 0;
             // todo
             printf("From dealer. mgs sent to worker2 channel.\n");
@@ -225,6 +227,7 @@ int main (int argc, char * argv[])
         // todo end
 
         mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
+        msg_rec_cnt++;
         printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
       }
       // todo
@@ -240,6 +243,13 @@ int main (int argc, char * argv[])
     // printf("From dealer, client process released, with status: %d\n", client_status);
     // todo end
 
+    while (msg_send_cnt != msg_rec_cnt)
+    {
+      mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
+      msg_rec_cnt++;
+      printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
+    }
+    
     for (int i = 0; i < N_SERV1; i++)
     {
       msg_d2w.id = TERMINATION_CODE;
@@ -256,20 +266,20 @@ int main (int argc, char * argv[])
     // printf("From dealer, all termination signals send\n");
     // todo end
     
-    int num_termination_from_workers = 0;
-    while (num_termination_from_workers != (N_SERV1 + N_SERV2)) {
-      mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
-      if (msg_w2d.id == TERMINATION_CODE) {
-        // todo
-        // printf("From dealer, termination signal received from worker\n");
-        // todo end
+    // int num_termination_from_workers = 0;
+    // while (num_termination_from_workers != (N_SERV1 + N_SERV2)) {
+    //   mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
+    //   if (msg_w2d.id == TERMINATION_CODE) {
+    //     // todo
+    //     // printf("From dealer, termination signal received from worker\n");
+    //     // todo end
 
-        num_termination_from_workers++;
-      }
-      else {
-        printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
-      }
-    }
+    //     num_termination_from_workers++;
+    //   }
+    //   else {
+    //     printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
+    //   }
+    // }
 
     // todo
     // printf("From dealer, second while loop end\n"); 

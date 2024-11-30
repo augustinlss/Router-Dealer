@@ -86,8 +86,8 @@ int main (int argc, char * argv[])
             printf("From woker1, termination received\n");
             // b1
 
-            response.id = TERMINATION_CODE;
-            mq_send(mq_resp, (char *) &response, sizeof(response), 0);
+            // response.id = TERMINATION_CODE;
+            // mq_send(mq_resp, (char *) &response, sizeof(response), 0);
             break;
         }
         response.id = received.id;
