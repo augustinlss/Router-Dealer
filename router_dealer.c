@@ -113,7 +113,7 @@ int main (int argc, char * argv[])
       }
       // todo 
       // workers1[i] = temp;
-      // todo end      
+      // end      
     }
 
     for (int i = 0; i < N_SERV2; i++)
@@ -126,11 +126,11 @@ int main (int argc, char * argv[])
       }
       // todo 
       // workers2[i] = temp;
-      // todo end
+      // end
     }
 
     // todo
-    printf("From the dealer. All workers created.\n");
+    // printf("From the dealer. All workers created.\n");
     // end
     
     MQ_CLIENT2DEALER_MESSAGE msg_c2d;
@@ -157,19 +157,20 @@ int main (int argc, char * argv[])
       if (attr_c2d.mq_curmsgs > 0 || isBuffered > 0) {
         if (isBuffered == 0) {
           // todo
-          printf("From dealer. No buffer message. Message left in client to dealer channel: %ld\n", attr_c2d.mq_curmsgs);
+          // printf("From dealer. No buffer message. Message left in client to dealer channel: %ld\n", attr_c2d.mq_curmsgs);
           // end
+
           mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL);
           if (msg_c2d.id == TERMINATION_CODE) {
           
             // todo 
-            printf("client to dealer queue empty, and first loop stop\n");
+            // printf("client to dealer queue empty, and first loop stop\n");
             // todo end
 
             break;
           }
           // todo
-          printf("From dealer. Fetch msg from client to dealer channel succeed.\n");
+          // printf("From dealer. Fetch msg from client to dealer channel succeed.\n");
           // end
           msg_d2w.id = msg_c2d.id;
           msg_d2w.data = msg_c2d.data;
@@ -181,14 +182,14 @@ int main (int argc, char * argv[])
           
           if (attr_d2w.mq_curmsgs < MQ_MAX_MESSAGES) {
             // todo          
-            printf("From dealer. Waiting to send msg to worker1 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
+            // printf("From dealer. Waiting to send msg to worker1 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
             // end
 
             mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
             msg_send_cnt++;
             isBuffered = 0;
             // todo
-            printf("From dealer. mgs sent to worker1 channel.\n");
+            // printf("From dealer. mgs sent to worker1 channel.\n");
             // end
           } else {
             isBuffered = 1;
@@ -199,14 +200,14 @@ int main (int argc, char * argv[])
           
           if (attr_d2w.mq_curmsgs < MQ_MAX_MESSAGES) {
             // todo
-            printf("From dealer. Waiting to send msg to worker2 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
+            // printf("From dealer. Waiting to send msg to worker2 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
             // end
 
             mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
             msg_send_cnt++;
             isBuffered = 0;
             // todo
-            printf("From dealer. mgs sent to worker2 channel.\n");
+            // printf("From dealer. mgs sent to worker2 channel.\n");
             // end
           }else{
             isBuffered = 1;
@@ -218,13 +219,13 @@ int main (int argc, char * argv[])
       // else{
       //   printf("client to dealer channel empty\n");
       // }
-      // todo end
+      // end
 
       mq_getattr(mq_worker2dealer, &attr_w2d);
       if (attr_w2d.mq_curmsgs > 0) {
         // todo
-        printf("From dealer. msg left in the response channel: %ld\n", attr_w2d.mq_curmsgs);
-        // todo end
+        // printf("From dealer. msg left in the response channel: %ld\n", attr_w2d.mq_curmsgs);
+        // end
 
         mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
         msg_rec_cnt++;
@@ -234,14 +235,14 @@ int main (int argc, char * argv[])
       // else{
       //   printf("response channel empty\n");
       // }
-      // todo end
+      // end
     }
 
     int client_status = 0;
     waitpid(client_1, &client_status, 0);
     // todo 
     // printf("From dealer, client process released, with status: %d\n", client_status);
-    // todo end
+    // end
 
     while (msg_send_cnt != msg_rec_cnt)
     {

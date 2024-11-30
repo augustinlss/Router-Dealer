@@ -57,7 +57,7 @@ int main (int argc, char * argv[])
     mq_resp = mq_open(argv[2], O_WRONLY);
 
     // todo b0
-    printf("worker 2 starts executing\n");
+    // printf("worker 2 starts executing\n");
     // b0
 
     do
@@ -65,8 +65,8 @@ int main (int argc, char * argv[])
         mq_receive(mq_d2w, (char *) &received, sizeof(received), NULL);
 
         // todo b1
-        printf("From woker2, received msg from dealer, rec id: %d, rec data: %d\n",
-            received.id, received.data);
+        // printf("From woker2, received msg from dealer, rec id: %d, rec data: %d\n",
+        //     received.id, received.data);
         // b1
 
         // if (mq_receive(mq_d2w, (char *) &received, sizeof(received), NULL) != -1) {
@@ -84,7 +84,7 @@ int main (int argc, char * argv[])
         rsleep(WAITING_TIME);
         if (received.id == TERMINATION_CODE) {
             // todo b1
-            printf("From woker2, termination received\n");
+            // printf("From woker2, termination received\n");
             // b1
 
             // response.id = TERMINATION_CODE;
@@ -95,16 +95,16 @@ int main (int argc, char * argv[])
         response.data = service(received.data);
 
         // todo
-        struct mq_attr attr_w2d;
-        mq_getattr(mq_resp, &attr_w2d);
-        printf("From worker2. Waiting to send msg to respose channel, msg left in the channel: %ld\n", attr_w2d.mq_curmsgs);
+        // struct mq_attr attr_w2d;
+        // mq_getattr(mq_resp, &attr_w2d);
+        // printf("From worker2. Waiting to send msg to respose channel, msg left in the channel: %ld\n", attr_w2d.mq_curmsgs);
         // end
 
         mq_send(mq_resp, (char *) &response, sizeof(response), 0);  
 
         // todo 
-        printf("From woker2, sent to response, rec id: %d, rec data: %d, resp data:%d\n",
-            received.id, received.data, response.data);
+        // printf("From woker2, sent to response, rec id: %d, rec data: %d, resp data:%d\n",
+        //     received.id, received.data, response.data);
         // end 
 
         //TODO test block1

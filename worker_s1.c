@@ -54,7 +54,7 @@ int main (int argc, char * argv[])
     mq_resp = mq_open(argv[2], O_WRONLY);
 
     // todo b0
-    printf("worker 1 starts executing\n");
+    // printf("worker 1 starts executing\n");
     // b0
 
     do
@@ -62,9 +62,9 @@ int main (int argc, char * argv[])
         mq_receive(mq_d2w1, (char *) &received, sizeof(received), NULL);
 
         // todo b1
-        printf("From woker1, received msg from dealer, rec id: %d, rec data: %d\n",
-            received.id, received.data);
-        // b1
+        // printf("From woker1, received msg from dealer, rec id: %d, rec data: %d\n",
+        //     received.id, received.data);
+        // end
 
         // if (mq_receive(mq_d2w1, (char *) &received, sizeof(received), NULL) != -1) {
         //     rsleep(WAITING_TIME);
@@ -83,8 +83,8 @@ int main (int argc, char * argv[])
         if (received.id == TERMINATION_CODE) {
             
             // todo b1
-            printf("From woker1, termination received\n");
-            // b1
+            // printf("From woker1, termination received\n");
+            // end
 
             // response.id = TERMINATION_CODE;
             // mq_send(mq_resp, (char *) &response, sizeof(response), 0);
@@ -94,17 +94,17 @@ int main (int argc, char * argv[])
         response.data = service(received.data);
 
         // todo
-        struct mq_attr attr_w2d;
-        mq_getattr(mq_resp, &attr_w2d);
-        printf("From worker1. Waiting to send msg to respose channel, msg left in the channel: %ld\n", attr_w2d.mq_curmsgs);
+        // struct mq_attr attr_w2d;
+        // mq_getattr(mq_resp, &attr_w2d);
+        // printf("From worker1. Waiting to send msg to respose channel, msg left in the channel: %ld\n", attr_w2d.mq_curmsgs);
         // end
 
         mq_send(mq_resp, (char *) &response, sizeof(response), 0);
         
         // todo b1
-        printf("From woker1, sent to response, rec id: %d, rec data: %d, resp data:%d\n",
-            received.id, received.data, response.data);
-        // todo b2
+        // printf("From woker1, sent to response, rec id: %d, rec data: %d, resp data:%d\n",
+        //     received.id, received.data, response.data);
+        // end
 
         //TODO test block1
         // else {
