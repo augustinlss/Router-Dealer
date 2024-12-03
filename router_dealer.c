@@ -126,11 +126,13 @@ int main (int argc, char * argv[])
     // end
     
     MQ_CLIENT2DEALER_MESSAGE msg_c2d;
+    msg_c2d.service_type = -2; //initialization
     MQ_DEALER2WORKER_MESSAGE msg_d2w;
     MQ_DEALER2WORKER_MESSAGE msg_w2d;
     
     // todo version for using buffer to fix
-    int isBuffered = 0;
+    int isBuffered = 0; 
+    int isMsgReceived = 0;
     // 0 -> not buffered
     // 1 -> buffered message
     // end version for using buffer to fix
@@ -145,29 +147,22 @@ int main (int argc, char * argv[])
       struct mq_attr attr_w2d;      
 
       // fixed the deadlock. Using the buffer scheme.
-      mq_getattr(mq_client2dealer, &attr_c2d);
-      if (attr_c2d.mq_curmsgs > 0 || isBuffered > 0) {
-        if (isBuffered == 0) {
-          // todo
-          // printf("From dealer. No buffer message. Message left in client to dealer channel: %ld\n", attr_c2d.mq_curmsgs);
-          // end
-
+      if (isBuffered == 0) {
+        mq_getattr(mq_client2dealer, &attr_c2d);
+        if (attr_c2d.mq_curmsgs > 0) {
           mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL);
           if (msg_c2d.id == TERMINATION_CODE) {
-          
-            // todo 
-            // printf("client to dealer queue empty, and first loop stop\n");
-            // todo end
-
             break;
           }
-          // todo
-          // printf("From dealer. Fetch msg from client to dealer channel succeed.\n");
-          // end
+          isMsgReceived = 1;
           msg_d2w.id = msg_c2d.id;
           msg_d2w.data = msg_c2d.data;
+        } else {
+          isMsgReceived = 0;
         }
-              
+      }
+
+      if (isMsgReceived == 1 || isBuffered == 1) {
         if (msg_c2d.service_type == 1 && N_SERV1 > 0) {
           struct mq_attr attr_d2w;
           mq_getattr(mq_dealer2worker1, &attr_d2w);
@@ -186,7 +181,7 @@ int main (int argc, char * argv[])
           } else {
             isBuffered = 1;
           }                
-        }else if (msg_c2d.service_type == 2 && N_SERV2 > 0) {
+        } else if (msg_c2d.service_type == 2 && N_SERV2 > 0) {
           struct mq_attr attr_d2w;
           mq_getattr(mq_dealer2worker2, &attr_d2w);          
           
@@ -207,12 +202,6 @@ int main (int argc, char * argv[])
         }
       }
 
-      // todo
-      // else{
-      //   printf("client to dealer channel empty\n");
-      // }
-      // end
-
       mq_getattr(mq_worker2dealer, &attr_w2d);
       if (attr_w2d.mq_curmsgs > 0) {
         // todo
@@ -223,6 +212,74 @@ int main (int argc, char * argv[])
         msg_rec_cnt++;
         printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
       }
+            
+      // if (attr_c2d.mq_curmsgs > 0 || isBuffered > 0) {
+      //   // if (isBuffered == 0) {
+      //   //   // todo
+      //   //   // printf("From dealer. No buffer message. Message left in client to dealer channel: %ld\n", attr_c2d.mq_curmsgs);
+      //   //   // end
+
+      //   //   mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL);
+      //   //   if (msg_c2d.id == TERMINATION_CODE) {
+          
+      //   //     // todo 
+      //   //     // printf("client to dealer queue empty, and first loop stop\n");
+      //   //     // todo end
+
+      //   //     break;
+      //   //   }
+      //   //   // todo
+      //   //   // printf("From dealer. Fetch msg from client to dealer channel succeed.\n");
+      //   //   // end
+      //   //   msg_d2w.id = msg_c2d.id;
+      //   //   msg_d2w.data = msg_c2d.data;
+      //   // }
+              
+      //   if (msg_c2d.service_type == 1 && N_SERV1 > 0) {
+      //     struct mq_attr attr_d2w;
+      //     mq_getattr(mq_dealer2worker1, &attr_d2w);
+          
+      //     if (attr_d2w.mq_curmsgs < MQ_MAX_MESSAGES) {
+      //       // todo          
+      //       // printf("From dealer. Waiting to send msg to worker1 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
+      //       // end
+
+      //       mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+      //       msg_send_cnt++;
+      //       isBuffered = 0;
+      //       // todo
+      //       // printf("From dealer. mgs sent to worker1 channel.\n");
+      //       // end
+      //     } else {
+      //       isBuffered = 1;
+      //     }                
+      //   }else if (msg_c2d.service_type == 2 && N_SERV2 > 0) {
+      //     struct mq_attr attr_d2w;
+      //     mq_getattr(mq_dealer2worker2, &attr_d2w);          
+          
+      //     if (attr_d2w.mq_curmsgs < MQ_MAX_MESSAGES) {
+      //       // todo
+      //       // printf("From dealer. Waiting to send msg to worker2 channel, msg left in the channel: %ld\n", attr_d2w.mq_curmsgs);
+      //       // end
+
+      //       mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
+      //       msg_send_cnt++;
+      //       isBuffered = 0;
+      //       // todo
+      //       // printf("From dealer. mgs sent to worker2 channel.\n");
+      //       // end
+      //     }else{
+      //       isBuffered = 1;
+      //     }                    
+      //   }
+      // }
+
+      // todo
+      // else{
+      //   printf("client to dealer channel empty\n");
+      // }
+      // end
+      
       // todo
       // else{
       //   printf("response channel empty\n");
