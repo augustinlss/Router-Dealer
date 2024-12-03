@@ -44,8 +44,6 @@ int main (int argc, char * argv[])
     fprintf (stderr, "%s: invalid arguments\n", argv[0]);
   }
   
-  
-
   // TODO:
     //  * create the message queues (see message_queue_test() in
     //    interprocess_basic.c) Done!
@@ -68,12 +66,6 @@ int main (int argc, char * argv[])
   mqd_t mq_dealer2worker2;
   mqd_t mq_worker2dealer;
   pid_t client_1;
-
-  // todo 
-  // pid_t workers1[N_SERV1];
-  // pid_t workers2[N_SERV2];
-  // todo end
-
 
   sprintf(client2dealer_name, "/Req_queue_%s_%d", STUDENT_NAME, router_pid);
   sprintf(dealer2worker1_name, "/S1_queue_%s_%d", STUDENT_NAME, router_pid);
@@ -290,119 +282,8 @@ int main (int argc, char * argv[])
     {
         wait(NULL);
     }
-
-
-    // int clien_status = 0;
-    // int cliend_id = 0;
-
-    // while (client_1 != cliend_id) {
-      
-    //   if (mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL) != -1) {
-    //     msg_d2w.id = msg_c2d.id;
-    //     msg_d2w.data = msg_c2d.data;
-
-    //     if (msg_c2d.service_type == 1) {
-    //       mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
-    //     }else {
-    //       mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
-    //     }
-
-    //     mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
-    //     printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
-
-    //     cliend_id = waitpid(client_1, &clien_status, WNOHANG);
-    //     printf("from first while\n");
-    //   }
-
-    // }
-
-    // while (true) {
-    //   printf("from first while\n");
-    //   int is_msg_c2d_left = mq_receive(mq_client2dealer, (char *) &msg_c2d, sizeof(msg_c2d), NULL);
-    //   // if (is_msg_c2d_left == -1 && errno == EAGAIN) {
-    //   if (is_msg_c2d_left == -1) {
-    //     break;
-    //   } 
-
-    //   msg_d2w.id = msg_c2d.id;
-    //   msg_d2w.data = msg_c2d.data;
-
-    //   if (msg_c2d.service_type == 1) {
-    //     mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
-    //   }else {
-    //     mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
-    //   }
-
-    //   mq_receive(mq_worker2dealer, (char*) &msg_w2d, sizeof(msg_w2d), NULL);
-    //   printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
-    // }
-
-
-    // for (int i = 0; i < N_SERV1; i++)
-    // {
-    //   msg_d2w.id = TERMINATION_CODE;
-    //   mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);
-    //   
-    // }
-
-    
-    
-
-    // for (int i = 0; i < N_SERV2; i++)
-    // {
-    //   msg_d2w.id = TERMINATION_CODE;
-    //   mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);
-    //   
-    // }
-
-    // for (int i = 0; i < N_SERV1 + N_SERV2; i++)
-    // {
-    //     wait(NULL);
-    // }
-    
-     
+ 
   }
-
-  // todo
-
-  // int status_c;
-  // pid_t cid_c = waitpid(client_1, &status_c, WNOHANG);
-  // if (cid_c == 0 || cid_c == -1) {
-  //     printf("Client has been released before.\n");
-  //   } 
-  // else {
-  //     printf("Client has NOT been released. waitpid returns %d\n", cid_c);
-  // }
-  
-  // int worker_cnt = 0;
-  // for (int i = 0; i < N_SERV1; i++)
-  // {
-  //   worker_cnt++;
-  //   int status_w;
-  //   pid_t cid = waitpid(workers1[i], &status_w, WNOHANG);
-  //   if (cid == 0 || cid == -1) {
-  //     printf("Worker1, number: %d, has been released before.\n", worker_cnt);
-  //   } 
-  //   else {
-  //     printf("Worker1, number: %d, has NOT been released. waitpid returns %d\n", worker_cnt, cid);
-  //   }
-  // }
-  // worker_cnt = 0;
-
-  // for (int i = 0; i < N_SERV2; i++)
-  // {
-  //   worker_cnt++;
-  //   int status_w;
-  //   pid_t cid = waitpid(workers2[i], &status_w, WNOHANG);
-  //   if (cid == 0 || cid == -1) {
-  //     printf("Worker2, number: %d, has been released before.\n", worker_cnt);
-  //   } 
-  //   else {
-  //     printf("Worker2, number: %d, has NOT been released. waitpid returns %d\n", worker_cnt, cid);
-  //   }
-  // }
-  
-  // todo end
 
   mq_close(mq_client2dealer);
   mq_close(mq_dealer2worker1);
