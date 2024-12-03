@@ -66,6 +66,8 @@ int main (int argc, char * argv[])
   mqd_t mq_dealer2worker2;
   mqd_t mq_worker2dealer;
   pid_t client_1;
+  pid_t workers1[N_SERV1];
+  pid_t workers2[N_SERV2];
 
   sprintf(client2dealer_name, "/Req_queue_%s_%d", STUDENT_NAME, router_pid);
   sprintf(dealer2worker1_name, "/S1_queue_%s_%d", STUDENT_NAME, router_pid);
@@ -104,7 +106,7 @@ int main (int argc, char * argv[])
            dealer2worker1_name, worker2dealer_name, NULL);
       }
       // todo 
-      // workers1[i] = temp;
+      workers1[i] = temp;
       // end      
     }
 
@@ -117,7 +119,7 @@ int main (int argc, char * argv[])
           dealer2worker2_name, worker2dealer_name, NULL);
       }
       // todo 
-      // workers2[i] = temp;
+      workers2[i] = temp;
       // end
     }
 
@@ -242,6 +244,11 @@ int main (int argc, char * argv[])
       msg_rec_cnt++;
       printf("%d -> %d\n",msg_w2d.id, msg_w2d.data);
     }
+
+    // for (int i = 0; i < N_SERV1; i++)
+    // {
+    //   kill(workers1[i], SIGTERM);     
+    // }
     
     for (int i = 0; i < N_SERV1; i++)
     {
@@ -249,10 +256,20 @@ int main (int argc, char * argv[])
       mq_send(mq_dealer2worker1, (char*) &msg_d2w, sizeof(msg_d2w), 0);      
     }
 
+    for (int i = 0; i < (N_SERV1); i++)
+    {
+        wait(NULL);
+    }
+
     for (int i = 0; i < N_SERV2; i++)
     {
       msg_d2w.id = TERMINATION_CODE;
       mq_send(mq_dealer2worker2, (char*) &msg_d2w, sizeof(msg_d2w), 0);      
+    }
+
+    for (int i = 0; i < (N_SERV2); i++)
+    {
+        wait(NULL);
     }
 
     // todo
@@ -278,10 +295,10 @@ int main (int argc, char * argv[])
     // printf("From dealer, second while loop end\n"); 
     // todo end
 
-    for (int i = 0; i < (N_SERV1 + N_SERV2); i++)
-    {
-        wait(NULL);
-    }
+    // for (int i = 0; i < (N_SERV1 + N_SERV2); i++)
+    // {
+    //     wait(NULL);
+    // }
  
   }
 
