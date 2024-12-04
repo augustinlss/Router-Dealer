@@ -49,33 +49,21 @@ int main (int argc, char * argv[])
     int request_left = -2;
 
     mq_request = mq_open (argv[1], O_WRONLY);
-
-    // todo b1
-    // printf("client starts executing\n");
-    // end
-    
     
     do
     {
         request_left = getNextRequest(&req_msg.id, &req_msg.data, &req_msg.service_type);
-        if(request_left <= NO_REQ){
-            // todo b2
-            // printf("From Client. No message left from client\n");
-            // end
-
+        if(request_left <= NO_REQ){    
+            //if no more request, sends out the temination message to indicate this is 
+            // the last message in the channel. 
             req_msg.id = TERMINATION_CODE;
             mq_send(mq_request, (char *) &req_msg, sizeof(req_msg), 0);
             break;            
         }        
-        mq_send(mq_request, (char *) &req_msg, sizeof(req_msg), 0);
-        // todo b3
-        // printf("From Client. Client sentd - id: %d, type: %d, data: %d\n",
-        //     req_msg.id, req_msg.service_type, req_msg.data);
-        // b3
+        mq_send(mq_request, (char *) &req_msg, sizeof(req_msg), 0);       
 
     } while (true);
     
-
     mq_close(mq_request);
     return (0);
 }
