@@ -20,7 +20,7 @@
 
 // define the data structures for your messages here
 
-#define TERMINATION_CODE -1 
+#define TERMINATION_CODE -1  //represents the termination signal
 #define WAITING_TIME 1000 
 
 typedef struct

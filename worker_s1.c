@@ -53,48 +53,20 @@ int main (int argc, char * argv[])
     mq_d2w1 = mq_open(argv[1], O_RDONLY);
     mq_resp = mq_open(argv[2], O_WRONLY);
 
-    // todo b0
-    printf("worker 1 starts executing\n");
-    // b0
-
     do
     {
         mq_receive(mq_d2w1, (char *) &received, sizeof(received), NULL);
-        // if (mq_receive(mq_d2w1, (char *) &received, sizeof(received), NULL) != -1) {
-        //     rsleep(WAITING_TIME);
-        //     // sleep(100);
-        //     if (received.id == TERMINATION_CODE) {
-        //     printf("From woker1, termination received\n");
-        //         break;
-        //     }
-        //     response.id = received.id;
-        //     response.data = service(received.data);
-        //     printf("From woker1, rec id: %d, rec data: %d, resp data:%d\n",
-        //         received.id, received.data, response.data);
-        //     mq_send(mq_resp, (char *) &response, sizeof(response), 0);
-        // } 
+        
         rsleep(WAITING_TIME);
         if (received.id == TERMINATION_CODE) {
-            // todo b1
-            printf("From woker1, termination received\n");
-            // b1
-            response.id = TERMINATION_CODE;
-            mq_send(mq_resp, (char *) &response, sizeof(response), 0);
+            //once the termination message is received from the channel, breaks the while loop
+            // and terminates the program. 
             break;
         }
         response.id = received.id;
         response.data = service(received.data);
-        // todo b1
-        printf("From woker1, rec id: %d, rec data: %d, resp data:%d\n",
-            received.id, received.data, response.data);
-            // todo b2
-        mq_send(mq_resp, (char *) &response, sizeof(response), 0);
-        //TODO test block1
-        // else {
-        //     printf("worker 1 did not receive anything, loop go on\n");
-        // }
-        //test block1
-        
+
+        mq_send(mq_resp, (char *) &response, sizeof(response), 0);                        
     } while (true);
     
     mq_close(mq_d2w1);
